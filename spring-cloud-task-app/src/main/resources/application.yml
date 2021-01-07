@@ -1,0 +1,18 @@
+server:
+  port: 8081
+
+logging:
+  level:
+    org.springframework.cloud.task: debug
+
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/postgres
+    password: postgres
+    username: postgres
+  jpa:
+    show-sql: true
+    hibernate:
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+      ddl-auto: update

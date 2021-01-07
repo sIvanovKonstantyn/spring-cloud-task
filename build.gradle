@@ -1,0 +1,23 @@
+plugins {
+    id 'java'
+}
+
+group 'com.home.demos'
+version '1.0'
+
+subprojects {
+    group 'com.home.demos'
+    sourceCompatibility = '11'
+
+    apply plugin: 'java'
+
+    repositories {
+        mavenCentral()
+        maven { url 'https://repo.spring.io/milestone' }
+        maven { url 'https://repo.spring.io/snapshot' }
+    }
+
+    test {
+        useJUnitPlatform()
+    }
+}
