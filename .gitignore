@@ -1,0 +1,8 @@
+.idea
+.gradle
+checkstyleidea.tmp
+*.iml
+build
+gradlew
+gradlew.bat
+gradle
