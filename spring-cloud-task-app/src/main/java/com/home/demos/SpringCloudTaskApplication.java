@@ -1,6 +1,13 @@
 package com.home.demos;
 
-import org.springframework.boot.CommandLineRunner;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.StepContribution;
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.scope.context.ChunkContext;
+import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.task.configuration.EnableTask;
@@ -8,21 +15,16 @@ import org.springframework.cloud.task.listener.annotation.AfterTask;
 import org.springframework.cloud.task.listener.annotation.BeforeTask;
 import org.springframework.cloud.task.listener.annotation.FailedTask;
 import org.springframework.cloud.task.repository.TaskExecution;
-
-import java.util.Arrays;
+import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 @EnableTask
-public class SpringCloudTaskApplication implements CommandLineRunner {
+@EnableBatchProcessing
+public class SpringCloudTaskApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(
                 SpringCloudTaskApplication.class, args);
-    }
-
-    @Override
-    public void run(String... args) throws Exception {
-        System.out.println("Task executed with params: " + Arrays.toString(args));
     }
 
     @BeforeTask
@@ -50,5 +52,40 @@ public class SpringCloudTaskApplication implements CommandLineRunner {
                 taskExecution.getTaskName(),
                 taskExecution.getExecutionId()
         );
+    }
+
+    @Bean
+    public Job job2(JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory) {
+        return jobBuilderFactory.get("job1")
+                .flow(
+                        stepBuilderFactory.get("job2step1")
+                                .allowStartIfComplete(true)
+                                .tasklet(new Tasklet() {
+                                    @Override
+                                    public RepeatStatus execute(
+                                            StepContribution contribution,
+                                            ChunkContext chunkContext) throws Exception {
+                                        System.out.println("This is first job step  from Batch job");
+                                        return RepeatStatus.FINISHED;
+                                    }
+                                })
+                                .build()
+                )
+                .next(
+                        stepBuilderFactory.get("job2step2")
+                                .allowStartIfComplete(true)
+                                .tasklet(new Tasklet() {
+                                    @Override
+                                    public RepeatStatus execute(
+                                            StepContribution contribution,
+                                            ChunkContext chunkContext) throws Exception {
+                                        System.out.println("This is second job step  from Batch job");
+                                        return RepeatStatus.FINISHED;
+                                    }
+                                })
+                                .build()
+                )
+                .end()
+                .build();
     }
 }
